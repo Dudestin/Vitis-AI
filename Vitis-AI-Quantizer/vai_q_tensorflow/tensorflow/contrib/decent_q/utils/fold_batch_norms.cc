@@ -210,27 +210,34 @@ Status GetMergedConvWeights(const NodeDef& conv_node,
   // Make sure all the inputs really are vectors, with as many entries
   // as there are columns in the weights.
   int weights_cols_index = 3;
+  int sub_weights_cols_index = -1; // new line
   if (conv_node.op() == "Conv2D") {
     weights_cols_index = 3;
   } else if (conv_node.op() == "DepthwiseConv2dNative") {
     weights_cols_index = 2;
+    sub_weights_cols_index = 3; // new line
   } else {
     weights_cols_index = 1;
   }
   const int64 weights_cols = weights.shape().dim_size(weights_cols_index);
+  // new line
+  const int64 sub_weights_cols = 1;
+  if (sub_weights_cols_index != -1)
+     sub_weights_cols = weights.shape().dim_size(sub_weights_cols_index); // new line
+  // new line end
 
   if (conv_node.op() != "MatMul") {
     std::string data_format = conv_node.attr().at("data_format").s();
     if (data_format == "NHWC") {
       if ((mul_values.shape().dims() != 1) ||
-          (mul_values.shape().dim_size(0) != weights_cols)) {
+          (mul_values.shape().dim_size(0) != weights_cols * sub_weights_cols)) { // modified
         return errors::InvalidArgument(
             "Mul constant NHWC input to batch norm has bad shape: ",
             mul_values.shape().DebugString());
       }
     } else if (data_format == "NCHW") {
       if ((mul_values.shape().dims() == 1) ||
-          (mul_values.shape().dim_size(1) != weights_cols)) {
+          (mul_values.shape().dim_size(1) != weights_cols * sub_weights_cols)) { // modified
         return errors::InvalidArgument(
             "Mul constant NCHW input to batch norm has bad shape: ",
             mul_values.shape().DebugString());
@@ -249,7 +256,7 @@ Status GetMergedConvWeights(const NodeDef& conv_node,
     auto scaled_weights_flatten = scaled_weights.flat<float>();
     for (int64 i = 0; i < weights.NumElements(); ++i) {
       scaled_weights_flatten(i) =
-          weights_flatten(i) * mul_values.flat<float>()(i % weights_cols);
+         weights_flatten(i) * mul_values.flat<float>()(i % (weights_cols * sub_weights_cols)); // modified
     }
   } else {
     auto weights_matrix = weights.flat_inner_dims<float>();

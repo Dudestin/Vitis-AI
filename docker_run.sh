@@ -46,7 +46,7 @@ gid=`id -g`
 
 #echo "$user $uid $gid"
 
-DOCKER_REPO="xilinx/"
+DOCKER_REPO="dudestin/"
 
 BRAND=vitis-ai
 VERSION=latest
