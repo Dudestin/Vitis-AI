@@ -210,20 +210,18 @@ Status GetMergedConvWeights(const NodeDef& conv_node,
   // Make sure all the inputs really are vectors, with as many entries
   // as there are columns in the weights.
   int weights_cols_index = 3;
-  int sub_weights_cols_index = -1; // new line
+  bool flag = false; // false
   if (conv_node.op() == "Conv2D") {
     weights_cols_index = 3;
   } else if (conv_node.op() == "DepthwiseConv2dNative") {
     weights_cols_index = 2;
-    sub_weights_cols_index = 3; // new line
+    flag = true;
   } else {
     weights_cols_index = 1;
   }
   const int64 weights_cols = weights.shape().dim_size(weights_cols_index);
   // new line
-  const int64 sub_weights_cols = 1;
-  if (sub_weights_cols_index != -1)
-     sub_weights_cols = weights.shape().dim_size(sub_weights_cols_index); // new line
+  const int64 sub_weights_cols = flag ? 1 : weights.shape().dim_size(3);
   // new line end
 
   if (conv_node.op() != "MatMul") {
