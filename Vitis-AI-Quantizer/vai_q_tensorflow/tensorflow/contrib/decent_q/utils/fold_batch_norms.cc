@@ -221,7 +221,7 @@ Status GetMergedConvWeights(const NodeDef& conv_node,
   }
   const int64 weights_cols = weights.shape().dim_size(weights_cols_index);
   // new line
-  const int64 sub_weights_cols = flag ? 1 : weights.shape().dim_size(3);
+  const int64 sub_weights_cols = flag ? weights.shape().dim_size(3) : 1;
   // new line end
 
   if (conv_node.op() != "MatMul") {
